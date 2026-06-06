@@ -103,7 +103,7 @@ strava-mcp/
 1. Go to <https://www.strava.com/settings/api>
 2. Create new app:
 
-- **App Name**: “Mei’s Personal MCP”
+- **App Name**: “Diana's Personal MCP”
 - **Category**: Fitness App
 - **Authorization Callback**: `http://localhost:3000/auth/callback` (for initial setup)
 
