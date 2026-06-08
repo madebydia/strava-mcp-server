@@ -4,9 +4,6 @@ A Model Context Protocol (MCP) server for accessing Strava data. This single-use
 
 Built by [@madebydia](https://x.com/madebydia)
 
-
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/mDdmai?referralCode=a6V1Do&utm_medium=integration&utm_source=template&utm_campaign=generic)
-
 ## Features
 
 - **Get Activities**: List recent activities with filters for date range and sport type
