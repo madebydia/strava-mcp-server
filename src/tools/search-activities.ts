@@ -1,4 +1,5 @@
 import { StravaClient } from '../strava-client.js';
+import { formatActivityDate } from '../date-format.js';
 
 export interface SearchActivitiesParams {
   sport_type?: string;
@@ -73,7 +74,7 @@ export async function searchActivities(
     id: activity.id,
     name: activity.name,
     type: activity.sport_type,
-    date: new Date(activity.start_date).toLocaleDateString(),
+    date: formatActivityDate(activity.start_date),
     distance: `${(activity.distance / 1000).toFixed(2)} km`,
     duration: formatDuration(activity.moving_time),
     elevation: `${Math.round(activity.total_elevation_gain)} m`,

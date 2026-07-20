@@ -1,4 +1,5 @@
 import { StravaClient } from '../strava-client.js';
+import { formatActivityDateTime } from '../date-format.js';
 
 export interface GetActivityDetailsParams {
   activity_id: string;
@@ -46,7 +47,7 @@ export async function getActivityDetails(
     id: activity.id,
     name: activity.name,
     type: activity.sport_type,
-    date: new Date(activity.start_date).toLocaleString(),
+    date: formatActivityDateTime(activity.start_date),
     description: activity.description || null,
     distance: `${distanceKm} km`,
     duration: `${durationMin}:${durationSec.toString().padStart(2, '0')}`,
