@@ -73,13 +73,15 @@ STRAVA_CLIENT_SECRET=your_client_secret
 STRAVA_ACCESS_TOKEN=from_setup_script
 STRAVA_REFRESH_TOKEN=from_setup_script
 STRAVA_EXPIRES_AT=from_setup_script
+STRAVA_TOKEN_FILE=/data/strava-tokens.json
 USE_SSE=true
 PORT=3000
 WEBHOOK_VERIFY_TOKEN=your_random_secure_string  # Optional, only if using webhooks
 ```
 
-4. Deploy the application
-5. Once deployed, Railway will provide you with a URL (e.g., `https://your-app.up.railway.app`)
+4. Attach a persistent Railway volume at `/data` so rotated Strava tokens survive deployments without being written to logs
+5. Deploy the application
+6. Once deployed, Railway will provide you with a URL (e.g., `https://your-app.up.railway.app`)
 
 ### 4. Connect to Poke.com
 

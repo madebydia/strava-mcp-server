@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test dist/date-format.test.js",
+    "test": "npm run build && node --test dist/*.test.js",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "setup-auth": "tsx setup-auth.ts"

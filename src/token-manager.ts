@@ -1,4 +1,13 @@
 import fetch from 'node-fetch';
+import { randomUUID } from 'node:crypto';
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+interface StoredTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number;
+}
 
 export class TokenManager {
   private accessToken: string;
@@ -6,6 +15,7 @@ export class TokenManager {
   private expiresAt: number;
   private clientId: string;
   private clientSecret: string;
+  private tokenFile?: string;
 
   constructor() {
     this.accessToken = process.env.STRAVA_ACCESS_TOKEN || '';
@@ -13,6 +23,11 @@ export class TokenManager {
     this.expiresAt = parseInt(process.env.STRAVA_EXPIRES_AT || '0');
     this.clientId = process.env.STRAVA_CLIENT_ID || '';
     this.clientSecret = process.env.STRAVA_CLIENT_SECRET || '';
+    this.tokenFile = process.env.STRAVA_TOKEN_FILE;
+
+    if (this.tokenFile) {
+      this.loadStoredTokens();
+    }
 
     if (!this.clientId || !this.clientSecret) {
       throw new Error('STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET must be set');
@@ -20,6 +35,10 @@ export class TokenManager {
 
     if (!this.accessToken || !this.refreshToken) {
       throw new Error('STRAVA_ACCESS_TOKEN and STRAVA_REFRESH_TOKEN must be set. Run setup-auth.ts first.');
+    }
+
+    if (this.tokenFile) {
+      this.persistTokens();
     }
   }
 
@@ -63,12 +82,46 @@ export class TokenManager {
     this.accessToken = data.access_token;
     this.refreshToken = data.refresh_token;
     this.expiresAt = data.expires_at;
+    this.persistTokens();
 
-    // Log new tokens for manual Railway update if needed
     console.log('Token refreshed successfully');
-    console.log('New tokens (update Railway env vars if needed):');
-    console.log('STRAVA_ACCESS_TOKEN:', this.accessToken);
-    console.log('STRAVA_REFRESH_TOKEN:', this.refreshToken);
-    console.log('STRAVA_EXPIRES_AT:', this.expiresAt);
+  }
+
+  private loadStoredTokens(): void {
+    if (!this.tokenFile) {
+      return;
+    }
+
+    try {
+      const stored = JSON.parse(readFileSync(this.tokenFile, 'utf8')) as StoredTokens;
+
+      if (!stored.accessToken || !stored.refreshToken || !Number.isFinite(stored.expiresAt)) {
+        throw new Error('token file is missing required values');
+      }
+
+      this.accessToken = stored.accessToken;
+      this.refreshToken = stored.refreshToken;
+      this.expiresAt = stored.expiresAt;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Failed to read STRAVA_TOKEN_FILE: ${message}`);
+      }
+    }
+  }
+
+  private persistTokens(): void {
+    if (!this.tokenFile) {
+      return;
+    }
+
+    const temporaryFile = `${this.tokenFile}.${process.pid}.${randomUUID()}.tmp`;
+    mkdirSync(dirname(this.tokenFile), { recursive: true });
+    writeFileSync(temporaryFile, JSON.stringify({
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+      expiresAt: this.expiresAt,
+    }), { mode: 0o600 });
+    renameSync(temporaryFile, this.tokenFile);
   }
 }
