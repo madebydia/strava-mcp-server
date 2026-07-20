@@ -293,6 +293,10 @@ if (useSSE) {
     res.json({ status: 'ok', server: 'strava-mcp', version: '1.0.0' });
   });
 
+  app.head('/sse', (_req, res) => {
+    res.status(200).end();
+  });
+
   // Webhook validation endpoint (Strava calls this once during subscription setup)
   app.get('/webhook/strava', (req, res) => {
     const mode = req.query['hub.mode'];

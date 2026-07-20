@@ -18,7 +18,7 @@ Built by [@madebydia](https://x.com/madebydia)
 ## Architecture
 
 - **Runtime**: Node.js/TypeScript
-- **Framework**: MCP SDK (@modelcontextprotocol/sdk v1.12+)
+- **Framework**: MCP SDK (@modelcontextprotocol/sdk v1.29.0)
 - **Transport**: StreamableHTTP (SSE) for Railway deployment, stdio for local development
 - **API Client**: node-fetch
 - **Token Storage**: Environment variables (auto-refresh)
@@ -45,8 +45,8 @@ Built by [@madebydia](https://x.com/madebydia)
 ### 2. Get OAuth Tokens (Local Setup)
 
 ```bash
-# Install dependencies
-npm install
+# Install the exact locked dependencies without lifecycle scripts
+npm ci --ignore-scripts
 
 # Set your Strava credentials
 export STRAVA_CLIENT_ID=your_client_id
