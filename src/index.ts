@@ -55,18 +55,18 @@ function addWebhookEvent(type: string, activityId: number, athleteId: number, ev
   console.log(`Added webhook event: ${type} for activity ${activityId}`);
 }
 
-// Create MCP server
-const server = new Server(
-  {
-    name: 'strava-mcp',
-    version: '1.0.0',
-  },
-  {
-    capabilities: {
-      tools: {},
+function createServer(): Server {
+  const server = new Server(
+    {
+      name: 'strava-mcp',
+      version: '1.0.0',
     },
-  }
-);
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
 // Register tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -262,6 +262,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+  return server;
+}
+
 // Determine transport mode based on environment
 const useSSE = process.env.USE_SSE === 'true' || process.env.PORT;
 
@@ -285,8 +288,11 @@ if (useSSE) {
     next();
   });
 
-  // Store active transports by session ID
-  const transports = new Map<string, StreamableHTTPServerTransport>();
+  // Each transport requires its own MCP server to isolate concurrent clients.
+  const sessions = new Map<string, {
+    server: Server;
+    transport: StreamableHTTPServerTransport;
+  }>();
 
   // Health check endpoint
   app.get('/health', (req, res) => {
@@ -346,32 +352,30 @@ if (useSSE) {
 
     console.log(`${req.method} /sse - Session: ${sessionId || 'new'}`);
 
-    // Get existing transport or create new one
-    let transport = sessionId ? transports.get(sessionId) : undefined;
+    // Get an existing isolated session or create one for a new client.
+    let session = sessionId ? sessions.get(sessionId) : undefined;
 
-    if (!transport) {
-      // Create new transport for this session
-      transport = new StreamableHTTPServerTransport({
+    if (!session) {
+      const sessionServer = createServer();
+      const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
         onsessioninitialized: (id) => {
           console.log(`Session initialized: ${id}`);
-          if (transport) {
-            transports.set(id, transport);
-          }
+          sessions.set(id, { server: sessionServer, transport });
         },
         onsessionclosed: (id) => {
           console.log(`Session closed: ${id}`);
-          transports.delete(id);
+          sessions.delete(id);
         },
       });
 
-      // Connect the transport to the server
-      await server.connect(transport);
+      await sessionServer.connect(transport);
+      session = { server: sessionServer, transport };
     }
 
     // Handle the request
     try {
-      await transport.handleRequest(req, res, req.body);
+      await session.transport.handleRequest(req, res, req.body);
     } catch (error) {
       console.error('Error handling request:', error);
       if (!res.headersSent) {
@@ -389,6 +393,7 @@ if (useSSE) {
 } else {
   // Stdio mode for local development
   console.log('Starting Strava MCP server in stdio mode');
+  const server = createServer();
   const transport = new StdioServerTransport();
   server.connect(transport).catch((error) => {
     console.error('Failed to start server:', error);
