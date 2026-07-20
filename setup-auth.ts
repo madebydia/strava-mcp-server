@@ -15,7 +15,6 @@
 
 import * as readline from 'readline';
 import * as http from 'http';
-import fetch from 'node-fetch';
 
 const CLIENT_ID = process.env.STRAVA_CLIENT_ID;
 const CLIENT_SECRET = process.env.STRAVA_CLIENT_SECRET;

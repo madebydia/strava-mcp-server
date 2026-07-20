@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { TokenManager } from './token-manager.js';
 
 export interface StravaActivity {

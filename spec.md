@@ -11,9 +11,9 @@ Single-user MCP server for Strava data, matching your existing Hevy/Oura/Amazon 
 - **Runtime**: Node.js/TypeScript
 - **Framework**: MCP SDK (@modelcontextprotocol/sdk)
 - **Transport**: SSE (Server-Sent Events)
-- **API Client**: node-fetch
+- **API Client**: Node.js native Fetch API
 - **Deployment**: Railway
-- **Token Storage**: Environment variables (no database!)
+- **Token Storage**: Environment variables seeded into a persistent Railway volume
 - **Auth**: OAuth 2.0 (one-time setup)
 
 ### Repository Structure
@@ -292,15 +292,14 @@ app.listen(PORT, () => {
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "express": "^4.18.2",
-    "node-fetch": "^3.3.2"
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "express": "4.22.2"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.0.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "@types/express": "4.17.25",
+    "@types/node": "20.19.24",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -317,11 +316,14 @@ STRAVA_CLIENT_SECRET=your_client_secret
 STRAVA_ACCESS_TOKEN=initial_access_token
 STRAVA_REFRESH_TOKEN=initial_refresh_token
 STRAVA_EXPIRES_AT=1234567890
+STRAVA_TOKEN_FILE=/data/strava-tokens.json
 
 # Server
 PORT=3000
 NODE_ENV=production
 ```
+
+Attach a persistent Railway volume at `/data` so each rotated refresh token survives restarts and deployments.
 
 ## Rate Limiting Strategy
 

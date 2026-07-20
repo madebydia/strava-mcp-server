@@ -20,8 +20,8 @@ Built by [@madebydia](https://x.com/madebydia)
 - **Runtime**: Node.js/TypeScript
 - **Framework**: MCP SDK (@modelcontextprotocol/sdk v1.29.0)
 - **Transport**: StreamableHTTP (SSE) for Railway deployment, stdio for local development
-- **API Client**: node-fetch
-- **Token Storage**: Environment variables (auto-refresh)
+- **API Client**: Node.js native Fetch API
+- **Token Storage**: Environment variables seeded into a persistent Railway volume
 - **Auth**: OAuth 2.0
 - **Session Management**: UUID-based session IDs with `mcp-session-id` header
 
